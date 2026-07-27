@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Calculadora 3D — Bambu Lab A1 Mini</title>
+  <meta name="description" content="Calculadora de custo e tempo de impressão 3D para Bambu Lab A1 Mini. Calcule o custo de filamento, energia elétrica e tempo de impressão." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <!-- iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BambuCalc" />
+</head>
+<body>
+  <!-- Background particles -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="12" fill="url(#logoGrad)"/>
+            <path d="M10 28 L20 12 L30 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 22 L26 22" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <circle cx="20" cy="12" r="2.5" fill="white"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00D4FF"/>
+                <stop offset="1" stop-color="#7B2FFF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">Bambu Calc</span>
+          <span class="logo-sub">A1 Mini · Calculadora 3D</span>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        <span>v2.0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Tab Navigation -->
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" id="tab-custo" role="tab" aria-selected="true" aria-controls="panel-custo" onclick="switchTab('custo')">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zM9 6h2v2H9V6zm0 4h2v4H9v-4z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+        Custo
+      </button>
+      <button class="tab-btn" id="tab-tempo" role="tab" aria-selected="false" aria-controls="panel-tempo" onclick="switchTab('tempo')">
+        <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Tempo
+      </button>
+      <button class="tab-btn" id="tab-filamento" role="tab" aria-selected="false" aria-controls="panel-filamento" onclick="switchTab('filamento')">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 17l7-14 7 14M5.5 12h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Filamento
+      </button>
+      <button class="tab-btn" id="tab-historico" role="tab" aria-selected="false" aria-controls="panel-historico" onclick="switchTab('historico')">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h8M4 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Histórico
+      </button>
+    </nav>
+
+    <!-- PANEL: CUSTO -->
+    <section class="tab-panel active" id="panel-custo" role="tabpanel" aria-labelledby="tab-custo">
+      <div class="panel-grid">
+
+        <!-- Filament Config -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Configuração do Filamento</h2>
+              <p class="card-desc">Tipo, peso e custo do material</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label class="form-label" for="filamentType">Tipo de Filamento</label>
+              <div class="filament-chips" id="filamentChips">
+                <button class="chip active" data-type="PLA" onclick="selectFilament('PLA', this)">PLA</button>
+                <button class="chip" data-type="PETG" onclick="selectFilament('PETG', this)">PETG</button>
+                <button class="chip" data-type="ABS" onclick="selectFilament('ABS', this)">ABS</button>
+                <button class="chip" data-type="TPU" onclick="selectFilament('TPU', this)">TPU</button>
+                <button class="chip" data-type="PLA+" onclick="selectFilament('PLA+', this)">PLA+</button>
+                <button class="chip" data-type="PETG-CF" onclick="selectFilament('PETG-CF', this)">PETG-CF</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filamentWeight">Peso do Carretel (g)</label>
+              <div class="input-wrapper">
+                <input type="number" id="filamentWeight" class="form-input" value="1000" min="100" step="50" oninput="calculate()" />
+                <span class="input-unit">g</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filamentPrice">Preço do Carretel (R$)</label>
+              <div class="input-wrapper">
+                <span class="input-prefix">R$</span>
+                <input type="number" id="filamentPrice" class="form-input has-prefix" value="89.90" min="0" step="0.01" oninput="calculate()" />
+              </div>
+            </div>
+
+            <div class="form-group span-2">
+              <label class="form-label" for="usedWeight">Filamento Utilizado (g)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="usedWeightSlider" class="form-slider" min="1" max="300" value="50" oninput="syncSlider('usedWeight', this.value)" />
+                <div class="input-wrapper">
+                  <input type="number" id="usedWeight" class="form-input small" value="50" min="1" step="1" oninput="syncInput('usedWeightSlider', this.value); calculate()" />
+                  <span class="input-unit">g</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Energy Config -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-yellow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Energia Elétrica</h2>
+              <p class="card-desc">Consumo e tarifa de energia</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="powerWatts">Potência da Impressora (W)</label>
+              <div class="input-wrapper">
+                <input type="number" id="powerWatts" class="form-input" value="200" min="50" max="1000" step="10" oninput="calculate()" />
+                <span class="input-unit">W</span>
+              </div>
+              <span class="form-hint">A1 Mini ≈ 120–200W</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="kwPrice">Tarifa de Energia (kWh)</label>
+              <div class="input-wrapper">
+                <span class="input-prefix">R$</span>
+                <input type="number" id="kwPrice" class="form-input has-prefix" value="0.85" min="0.10" step="0.01" oninput="calculate()" />
+              </div>
+              <span class="form-hint">Média Brasil ≈ R$ 0,70–1,10</span>
+            </div>
+
+            <div class="form-group span-2">
+              <label class="form-label" for="printTime">Tempo de Impressão</label>
+              <div class="time-inputs">
+                <div class="input-wrapper">
+                  <input type="number" id="printHours" class="form-input small" value="2" min="0" max="99" step="1" oninput="calculate()" />
+                  <span class="input-unit">h</span>
+                </div>
+                <span class="time-sep">:</span>
+                <div class="input-wrapper">
+                  <input type="number" id="printMinutes" class="form-input small" value="30" min="0" max="59" step="5" oninput="calculate()" />
+                  <span class="input-unit">min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extras -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2M12 2a10 10 0 100 20A10 10 0 0012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Custos Adicionais</h2>
+              <p class="card-desc">Mão de obra, depreciação e margem</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="laborCost">Mão de Obra (R$/h)</label>
+              <div class="input-wrapper">
+                <span class="input-prefix">R$</span>
+                <input type="number" id="laborCost" class="form-input has-prefix" value="0" min="0" step="5" oninput="calculate()" />
+                <span class="input-unit">/h</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="printerDepreciation">Depreciação (R$/h)</label>
+              <div class="input-wrapper">
+                <span class="input-prefix">R$</span>
+                <input type="number" id="printerDepreciation" class="form-input has-prefix" value="1.50" min="0" step="0.10" oninput="calculate()" />
+                <span class="input-unit">/h</span>
+              </div>
+              <span class="form-hint">A1 Mini ≈ R$ 1,00–2,50/h</span>
+            </div>
+
+            <div class="form-group span-2">
+              <label class="form-label" for="profitMargin">Margem de Lucro (%)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="profitMarginSlider" class="form-slider" min="0" max="200" value="30" oninput="syncSlider('profitMargin', this.value)" />
+                <div class="input-wrapper">
+                  <input type="number" id="profitMargin" class="form-input small" value="30" min="0" max="500" step="5" oninput="syncInput('profitMarginSlider', this.value); calculate()" />
+                  <span class="input-unit">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group span-2">
+              <label class="form-label" for="projectName">Nome do Projeto (opcional)</label>
+              <input type="text" id="projectName" class="form-input" placeholder="Ex: Suporte para celular" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card glass results-card" id="resultsCard">
+          <div class="card-header">
+            <div class="card-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M7 21H4a1 1 0 01-1-1V4a1 1 0 011-1h10l7 7v10a1 1 0 01-1 1h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Resumo de Custo</h2>
+              <p class="card-desc">Breakdown detalhado da impressão</p>
+            </div>
+          </div>
+
+          <div class="results-grid">
+            <div class="result-item">
+              <span class="result-label">Custo do Filamento</span>
+              <span class="result-value" id="res-filament">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Custo de Energia</span>
+              <span class="result-value" id="res-energy">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Mão de Obra</span>
+              <span class="result-value" id="res-labor">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Depreciação</span>
+              <span class="result-value" id="res-depreciation">R$ 0,00</span>
+            </div>
+            <div class="result-divider"></div>
+            <div class="result-item">
+              <span class="result-label">Custo Total</span>
+              <span class="result-value accent" id="res-total">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Preço de Venda (com margem)</span>
+              <span class="result-value highlight" id="res-selling">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Lucro Estimado</span>
+              <span class="result-value green" id="res-profit">R$ 0,00</span>
+            </div>
+          </div>
+
+          <!-- Visual breakdown bar -->
+          <div class="breakdown-bar-section">
+            <p class="breakdown-title">Distribuição de Custos</p>
+            <div class="breakdown-bar" id="breakdownBar">
+              <div class="bar-segment seg-filament" id="bar-filament" style="width:0%"></div>
+              <div class="bar-segment seg-energy" id="bar-energy" style="width:0%"></div>
+              <div class="bar-segment seg-labor" id="bar-labor" style="width:0%"></div>
+              <div class="bar-segment seg-depreciation" id="bar-depreciation" style="width:0%"></div>
+            </div>
+            <div class="breakdown-legend">
+              <span class="legend-item"><span class="legend-dot seg-filament"></span>Filamento</span>
+              <span class="legend-item"><span class="legend-dot seg-energy"></span>Energia</span>
+              <span class="legend-item"><span class="legend-dot seg-labor"></span>M. de Obra</span>
+              <span class="legend-item"><span class="legend-dot seg-depreciation"></span>Deprec.</span>
+            </div>
+          </div>
+
+          <div class="results-actions">
+            <button class="btn btn-primary" onclick="saveToHistory()">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M5 4h10a1 1 0 011 1v11l-4-2-3 2-4-2V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Salvar no Histórico
+            </button>
+            <button class="btn btn-ghost" onclick="copyResult()">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 13H4a1 1 0 01-1-1V3a1 1 0 011-1h9a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Copiar
+            </button>
+            <button class="btn btn-ghost" onclick="resetForm()">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M4 4v5h5M16 16v-5h-5M4.4 9A8 8 0 1115.6 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Limpar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: TEMPO -->
+    <section class="tab-panel" id="panel-tempo" role="tabpanel" aria-labelledby="tab-tempo">
+      <div class="panel-grid">
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Estimativa de Tempo</h2>
+              <p class="card-desc">Calcule o tempo aproximado de impressão</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="layerHeight">Altura da Camada (mm)</label>
+              <div class="chips-row" id="layerChips">
+                <button class="chip small" data-val="0.1" onclick="selectLayer('0.1', this)">0.1</button>
+                <button class="chip small" data-val="0.2" onclick="selectLayer('0.2', this)">0.2</button>
+                <button class="chip small active" data-val="0.3" onclick="selectLayer('0.3', this)">0.3</button>
+              </div>
+              <div class="input-wrapper" style="margin-top:8px">
+                <input type="number" id="layerHeight" class="form-input small" value="0.2" min="0.05" max="0.35" step="0.05" oninput="estimateTime()" />
+                <span class="input-unit">mm</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="printSpeed">Velocidade de Impressão</label>
+              <div class="chips-row" id="speedChips">
+                <button class="chip small" data-val="150" onclick="selectSpeed('150', this)">Rascunho</button>
+                <button class="chip small active" data-val="250" onclick="selectSpeed('250', this)">Normal</button>
+                <button class="chip small" data-val="500" onclick="selectSpeed('500', this)">Turbo</button>
+              </div>
+              <div class="input-wrapper" style="margin-top:8px">
+                <input type="number" id="printSpeed" class="form-input small" value="250" min="50" max="600" step="10" oninput="estimateTime()" />
+                <span class="input-unit">mm/s</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="objectVolume">Volume do Objeto (cm³)</label>
+              <div class="input-wrapper">
+                <input type="number" id="objectVolume" class="form-input" value="20" min="0.1" max="5000" step="0.5" oninput="estimateTime()" />
+                <span class="input-unit">cm³</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="infillDensity">Preenchimento (%)</label>
+              <div class="input-wrapper">
+                <input type="number" id="infillDensity" class="form-input" value="15" min="0" max="100" step="5" oninput="estimateTime()" />
+                <span class="input-unit">%</span>
+              </div>
+            </div>
+
+            <div class="form-group span-2">
+              <label class="form-label" for="supportEnabled">Suporte</label>
+              <div class="toggle-row">
+                <label class="toggle" id="supportToggle">
+                  <input type="checkbox" id="supportEnabled" onchange="estimateTime()" />
+                  <span class="toggle-thumb"></span>
+                </label>
+                <span class="toggle-label" id="supportLabel">Desabilitado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time result -->
+          <div class="time-result-card" id="timeResultCard">
+            <div class="time-display">
+              <div class="time-block">
+                <span class="time-number" id="time-hours">0</span>
+                <span class="time-label">horas</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-block">
+                <span class="time-number" id="time-minutes">00</span>
+                <span class="time-label">minutos</span>
+              </div>
+            </div>
+            <div class="time-meta">
+              <div class="time-meta-item">
+                <svg viewBox="0 0 16 16" fill="none"><path d="M2 14L8 2l6 12H2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                <span id="time-filament-use">0g / 0m</span>
+              </div>
+              <div class="time-meta-item">
+                <svg viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span id="time-layers">0 camadas</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="useTimeInCalculator()">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 5v10M5 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Usar na Calculadora de Custo
+            </button>
+          </div>
+        </div>
+
+        <!-- A1 Mini Specs Card -->
+        <div class="card glass specs-card">
+          <div class="card-header">
+            <div class="card-icon icon-orange">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M9 9h6M9 12h6M9 15h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Bambu Lab A1 Mini</h2>
+              <p class="card-desc">Especificações técnicas</p>
+            </div>
+          </div>
+          <div class="specs-grid">
+            <div class="spec-item">
+              <span class="spec-label">Área de Impressão</span>
+              <span class="spec-value">180 × 180 × 180 mm</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Velocidade Máxima</span>
+              <span class="spec-value">500 mm/s</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Aceleração Máx.</span>
+              <span class="spec-value">10.000 mm/s²</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Diâmetro do Bico</span>
+              <span class="spec-value">0.4 mm (padrão)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Temp. Bico Máx.</span>
+              <span class="spec-value">300 °C</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Temp. Mesa Máx.</span>
+              <span class="spec-value">80 °C</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Consumo Médio</span>
+              <span class="spec-value">~120–200 W</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Diâm. Filamento</span>
+              <span class="spec-value">1.75 mm</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Multi-material (AMS)</span>
+              <span class="spec-value">Sim (até 4 cores)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: FILAMENTO -->
+    <section class="tab-panel" id="panel-filamento" role="tabpanel" aria-labelledby="tab-filamento">
+      <div class="panel-grid">
+        <div class="card glass span-full">
+          <div class="card-header">
+            <div class="card-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Guia de Filamentos</h2>
+              <p class="card-desc">Compatibilidade e configurações recomendadas para A1 Mini</p>
+            </div>
+          </div>
+          <div class="filament-table-wrapper">
+            <table class="filament-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Temp. Bico</th>
+                  <th>Temp. Mesa</th>
+                  <th>Velocidade</th>
+                  <th>Dificuldade</th>
+                  <th>Densidade</th>
+                  <th>Preço Médio</th>
+                  <th>A1 Mini</th>
+                </tr>
+              </thead>
+              <tbody id="filamentTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Density Calculator -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M9 7l4 4M9 7V4a1 1 0 011-1h9a1 1 0 011 1v9a1 1 0 01-1 1h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Conversor Peso ↔ Metro</h2>
+              <p class="card-desc">Converta gramas em metros de filamento</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="convFilament">Tipo de Filamento</label>
+              <select id="convFilament" class="form-input form-select" onchange="convertFilament()">
+                <option value="1.24">PLA (1.24 g/cm³)</option>
+                <option value="1.27">PLA+ (1.27 g/cm³)</option>
+                <option value="1.27">PETG (1.27 g/cm³)</option>
+                <option value="1.04">ABS (1.04 g/cm³)</option>
+                <option value="1.20">TPU (1.20 g/cm³)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="convGrams">Peso em gramas</label>
+              <div class="input-wrapper">
+                <input type="number" id="convGrams" class="form-input" value="100" min="1" oninput="convertFilament()" />
+                <span class="input-unit">g</span>
+              </div>
+            </div>
+            <div class="conv-result-card">
+              <div class="conv-result-item">
+                <span>Comprimento</span>
+                <strong id="conv-meters">0 m</strong>
+              </div>
+              <div class="conv-result-item">
+                <span>Volume</span>
+                <strong id="conv-volume">0 cm³</strong>
+              </div>
+              <div class="conv-result-item">
+                <span>Custo (R$ 89,90/kg)</span>
+                <strong id="conv-cost">R$ 0,00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Dicas de Impressão</h2>
+              <p class="card-desc">Maximize a qualidade na A1 Mini</p>
+            </div>
+          </div>
+          <div class="tips-list">
+            <div class="tip-item">
+              <span class="tip-icon">💡</span>
+              <p><strong>Bambu PLA Basic</strong> é o filamento mais testado para A1 Mini — começo ideal.</p>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">⚡</span>
+              <p><strong>Modo Turbo (500mm/s)</strong> funciona bem com PLA, mas reduza para PETG e ABS.</p>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">🌡️</span>
+              <p>Mesa aquecida a <strong>55°C para PLA</strong>, <strong>70°C para PETG</strong> melhora aderência.</p>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">🧲</span>
+              <p>Verifique o <strong>calibre do filamento</strong> com um paquímetro — variações afetam a qualidade.</p>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">💾</span>
+              <p>Use o <strong>Bambu Studio</strong> para otimizar suportes árvore e reduzir filamento usado.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: HISTORICO -->
+    <section class="tab-panel" id="panel-historico" role="tabpanel" aria-labelledby="tab-historico">
+      <div class="panel-grid">
+        <div class="card glass span-full">
+          <div class="card-header">
+            <div class="card-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 10h16M4 14h16M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Histórico de Impressões</h2>
+              <p class="card-desc">Registro de todos os cálculos salvos</p>
+            </div>
+            <div style="margin-left:auto">
+              <button class="btn btn-ghost btn-sm" onclick="clearHistory()">
+                <svg viewBox="0 0 20 20" fill="none" style="width:14px;height:14px"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Limpar Tudo
+              </button>
+            </div>
+          </div>
+          <div id="historyList" class="history-list">
+            <div class="empty-state" id="emptyHistory">
+              <div class="empty-icon">
+                <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M20 30h24M20 38h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/><circle cx="32" cy="22" r="4" stroke="currentColor" stroke-width="2" opacity="0.4"/></svg>
+              </div>
+              <p class="empty-text">Nenhum cálculo salvo ainda.</p>
+              <p class="empty-sub">Calcule um custo e clique em "Salvar no Histórico".</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="card glass">
+          <div class="card-header">
+            <div class="card-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <h2 class="card-title">Estatísticas</h2>
+              <p class="card-desc">Resumo das impressões realizadas</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-num" id="stat-total-prints">0</span>
+              <span class="stat-label">Impressões</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-total-cost">R$ 0</span>
+              <span class="stat-label">Custo Total</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-total-filament">0g</span>
+              <span class="stat-label">Filamento Usado</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-avg-cost">R$ 0</span>
+              <span class="stat-label">Custo Médio</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
